@@ -1,0 +1,58 @@
+.analytics-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.drill-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.crumb {
+  color: var(--blue-500);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.crumb:hover { color: var(--blue-700); }
+.crumb.current { color: var(--gray-700); cursor: default; }
+.crumb-sep { color: var(--gray-400); }
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.drilldown-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.drilldown-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--blue-200);
+}
+
+.drilldown-card.selected {
+  border-color: var(--blue-500);
+  background: var(--blue-50);
+}
+
+@media (max-width: 768px) {
+  .analytics-grid { grid-template-columns: 1fr; }
+}

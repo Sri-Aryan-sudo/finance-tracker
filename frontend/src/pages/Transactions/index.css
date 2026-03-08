@@ -1,0 +1,60 @@
+.transactions-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.transactions-toolbar {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.toolbar-actions { display: flex; gap: 8px; align-items: center; }
+
+.delete-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(4px);
+}
+
+.delete-confirm-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  width: 400px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  animation: fadeIn 0.2s ease;
+}
+
+.delete-icon {
+  width: 64px;
+  height: 64px;
+  background: var(--red-50);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: var(--red-500);
+}
+
+.delete-icon .material-icons-round { font-size: 32px; }

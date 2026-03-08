@@ -1,0 +1,97 @@
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.summary-card.income::before { background: linear-gradient(90deg, var(--green-500), var(--teal-500)); }
+.summary-card.expense::before { background: linear-gradient(90deg, var(--red-500), var(--orange-500)); }
+.summary-card.balance::before { background: linear-gradient(90deg, var(--blue-500), var(--indigo-500)); }
+.summary-card.count::before { background: linear-gradient(90deg, var(--purple-500), var(--blue-400)); }
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.card-icon.income { background: var(--green-50); color: var(--green-600); }
+.card-icon.expense { background: var(--red-50); color: var(--red-500); }
+.card-icon.balance { background: var(--blue-50); color: var(--blue-600); }
+.card-icon.count { background: var(--purple-50); color: var(--purple-600); }
+
+.card-icon .material-icons-round { font-size: 24px; }
+
+.card-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+
+.card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  font-family: 'DM Mono', monospace;
+}
+
+.card-value.income { color: var(--green-600); }
+.card-value.expense { color: var(--red-500); }
+.card-value.balance-positive { color: var(--blue-600); }
+.card-value.balance-negative { color: var(--red-500); }
+
+.card-change {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-400);
+}
+
+.card-change .material-icons-round { font-size: 14px; }
+
+@media (max-width: 1024px) {
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .cards-grid { grid-template-columns: 1fr; }
+}
