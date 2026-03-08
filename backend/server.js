@@ -31,7 +31,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/upload', uploadRoutes);
 
 app.get("/", (req, res) => {
-  res.send("API running");
+  res.send(process.env.DB_PASSWORD);
 });
 // Health check
 app.get('/api/health', (req, res) => {
