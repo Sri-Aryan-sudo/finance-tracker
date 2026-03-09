@@ -28,7 +28,7 @@ const signup = async (req, res) => {
       'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING user_id, name, email, created_at',
       [name, email, password_hash]
     );
-
+    console.log("I am here")
     const user = result.rows[0];
     const token = jwt.sign(
       { user_id: user.user_id, name: user.name, email: user.email },
