@@ -52,8 +52,8 @@ class TransactionDetail extends Component {
     if (loading) {
       return (
         <div className="page-container">
-          <div className="skeleton" style={{ height: 48, width: 200, marginBottom: 24 }} />
-          <div className="skeleton" style={{ height: 300, borderRadius: 16 }} />
+          <div className="skeleton" style={{ height: 36, width: 160, marginBottom: 20, borderRadius: 8 }} />
+          <div className="skeleton" style={{ height: 280, borderRadius: 16 }} />
         </div>
       );
     }
@@ -73,15 +73,15 @@ class TransactionDetail extends Component {
     }
 
     return (
-      <div className="page-container fade-in" style={{ maxWidth: 760 }}>
+      <div className="page-container fade-in detail-page">
         <button className="back-btn" onClick={() => navigate('/transactions')}>
           <span className="material-icons-round" style={{ fontSize: 18 }}>arrow_back</span>
           Back to Transactions
         </button>
 
         {editing ? (
-          <div className="card" style={{ padding: 32 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Edit Transaction</h2>
+          <div className="card detail-edit-card">
+            <h2 className="detail-edit-title">Edit Transaction</h2>
             <TransactionForm
               transaction={tx}
               onSuccess={this.handleEditSuccess}
@@ -97,11 +97,11 @@ class TransactionDetail extends Component {
                 </div>
                 <div className="detail-meta">
                   <span className={`badge badge-${tx.type}`}>{tx.type}</span>
-                  <span style={{ color: 'var(--gray-400)', fontSize: 14 }}>{formatDate(tx.date)}</span>
+                  <span className="detail-date">{formatDate(tx.date)}</span>
                 </div>
               </div>
-              <button className="btn btn-outline" onClick={() => this.setState({ editing: true })}>
-                <span className="material-icons-round" style={{ fontSize: 16 }}>edit</span>
+              <button className="btn btn-outline btn-sm" onClick={() => this.setState({ editing: true })}>
+                <span className="material-icons-round" style={{ fontSize: 15 }}>edit</span>
                 Edit
               </button>
             </div>
@@ -126,11 +126,11 @@ class TransactionDetail extends Component {
                 </div>
                 <div className="detail-field">
                   <label>Transaction ID</label>
-                  <div className="value mono" style={{ fontSize: 14, color: 'var(--gray-500)' }}>#{tx.transaction_id}</div>
+                  <div className="value mono detail-muted">#{tx.transaction_id}</div>
                 </div>
                 <div className="detail-field">
                   <label>Added On</label>
-                  <div className="value" style={{ fontSize: 14, color: 'var(--gray-500)' }}>
+                  <div className="value detail-muted">
                     {new Date(tx.created_at).toLocaleDateString('en-IN')}
                   </div>
                 </div>

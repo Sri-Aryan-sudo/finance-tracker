@@ -7,22 +7,34 @@
 }
 
 .transactions-toolbar {
-  padding: 16px 20px;
+  padding: clamp(12px, 2vw, 16px) clamp(14px, 2.5vw, 20px);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.toolbar-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--gray-900);
+.toolbar-title { font-size: clamp(14px, 2vw, 16px); font-weight: 700; color: var(--gray-900); }
+.toolbar-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* Page header flex wrap on mobile */
+.transactions-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: clamp(20px, 4vw, 28px);
+  flex-wrap: wrap;
 }
 
-.toolbar-actions { display: flex; gap: 8px; align-items: center; }
+.transactions-page-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
 
 .delete-confirm-overlay {
   position: fixed;
@@ -33,21 +45,23 @@
   justify-content: center;
   z-index: 1100;
   backdrop-filter: blur(4px);
+  padding: 16px;
 }
 
 .delete-confirm-card {
   background: white;
   border-radius: var(--radius-xl);
-  padding: 32px;
-  width: 400px;
+  padding: clamp(24px, 5vw, 32px);
+  width: 100%;
+  max-width: 380px;
   text-align: center;
   box-shadow: var(--shadow-lg);
   animation: fadeIn 0.2s ease;
 }
 
 .delete-icon {
-  width: 64px;
-  height: 64px;
+  width: clamp(48px, 10vw, 64px);
+  height: clamp(48px, 10vw, 64px);
   background: var(--red-50);
   border-radius: 50%;
   display: flex;
@@ -56,5 +70,32 @@
   margin: 0 auto 16px;
   color: var(--red-500);
 }
+.delete-icon .material-icons-round { font-size: clamp(24px, 5vw, 32px); }
 
-.delete-icon .material-icons-round { font-size: 32px; }
+@media (max-width: 480px) {
+  .transactions-page-actions .btn span:not(.material-icons-round) { display: none; }
+  .transactions-page-actions .btn { padding: 8px 10px; }
+}
+
+.delete-confirm-title {
+  font-size: clamp(17px, 3vw, 20px);
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--gray-900);
+}
+
+.delete-confirm-msg {
+  color: var(--gray-500);
+  font-size: clamp(13px, 2vw, 14px);
+  margin-bottom: clamp(20px, 4vw, 24px);
+  line-height: 1.5;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.delete-confirm-actions .btn { min-width: 100px; }

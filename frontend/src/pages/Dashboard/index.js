@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { getDashboard, getTransactions } from '../../services/api';
 import DashboardCards from '../../components/DashboardCards';
-import { MonthlyTrendChart, ExpenseCategoryPie, IncomeSourceChart, IncomeExpenseBar } from '../../components/Charts';
+import { MonthlyTrendChart, ExpenseCategoryPie, IncomeSourceChart } from '../../components/Charts';
 import TransactionTable from '../../components/TransactionTable';
 import './index.css';
 
@@ -74,11 +74,13 @@ class Dashboard extends Component {
 
         <DashboardCards summary={dashboardData?.summary} loading={loading} />
 
-        <div className="charts-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20, marginBottom: 20 }}>
+        {/* Full-width monthly trend */}
+        <div className="dashboard-chart-full">
           <MonthlyTrendChart data={dashboardData?.monthly_trend} loading={loading} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+        {/* Two-column pie + bar */}
+        <div className="dashboard-charts-row">
           <ExpenseCategoryPie data={dashboardData?.expense_by_category} loading={loading} />
           <IncomeSourceChart data={dashboardData?.income_by_source} loading={loading} />
         </div>
