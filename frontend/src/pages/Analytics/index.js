@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
 import { getAnalytics } from '../../services/api';
 import './index.css';
@@ -23,10 +23,23 @@ class PieTooltip extends Component {
     if (!active || !payload?.length) return null;
     const d = payload[0];
     return (
-      <div style={{ background: 'white', border: '1px solid #E0E0E0', borderRadius: 8, padding: '10px 14px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}>
-        <p style={{ fontWeight: 600, color: '#424242', marginBottom: 4 }}>{d.name}</p>
-        <p style={{ color: d.payload.fill, fontFamily: 'DM Mono, monospace' }}>{formatCurrency(d.value)}</p>
-        <p style={{ color: '#9E9E9E', fontSize: 12 }}>{(d.percent * 100).toFixed(1)}%</p>
+      <div className="custom-tooltip">
+        <p className="label">{d.name}</p>
+        <p className="value" style={{ color: d.payload.fill }}>{formatCurrency(d.value)}</p>
+        <p style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2 }}>{(d.percent * 100).toFixed(1)}%</p>
+      </div>
+    );
+  }
+}
+
+class BarTooltip extends Component {
+  render() {
+    const { active, payload, label } = this.props;
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="custom-tooltip">
+        <p className="label">{label}</p>
+        <p className="value">{formatCurrency(payload[0].value)}</p>
       </div>
     );
   }
@@ -39,8 +52,7 @@ class Analytics extends Component {
       analyticsData: null,
       loading: false,
       error: null,
-      // Drill-down state
-      drillLevel: 0, // 0=category, 1=subcategory, 2=source
+      drillLevel: 0,
       selectedCategory: null,
       selectedSubcategory: null,
       txType: 'expense',
@@ -51,9 +63,7 @@ class Analytics extends Component {
     this.handleSubcategoryClick = this.handleSubcategoryClick.bind(this);
   }
 
-  componentDidMount() {
-    this.loadAnalytics();
-  }
+  componentDidMount() { this.loadAnalytics(); }
 
   async loadAnalytics() {
     this.setState({ loading: true });
@@ -77,34 +87,21 @@ class Analytics extends Component {
   getCurrentPieData() {
     const { analyticsData, drillLevel, selectedCategory, selectedSubcategory } = this.state;
     if (!analyticsData) return [];
-
-    if (drillLevel === 0) {
-      return analyticsData.by_category.map(d => ({ name: d.category, value: parseFloat(d.total), count: d.count }));
-    }
-    if (drillLevel === 1) {
-      return analyticsData.by_subcategory
-        .filter(d => d.category === selectedCategory)
-        .map(d => ({ name: d.subcategory, value: parseFloat(d.total), count: d.count }));
-    }
-    if (drillLevel === 2) {
-      return analyticsData.by_source
-        .filter(d => d.category === selectedCategory && d.subcategory === selectedSubcategory)
-        .map(d => ({ name: d.source, value: parseFloat(d.total), count: d.count }));
-    }
+    if (drillLevel === 0) return analyticsData.by_category.map(d => ({ name: d.category, value: parseFloat(d.total), count: d.count }));
+    if (drillLevel === 1) return analyticsData.by_subcategory.filter(d => d.category === selectedCategory).map(d => ({ name: d.subcategory, value: parseFloat(d.total), count: d.count }));
+    if (drillLevel === 2) return analyticsData.by_source.filter(d => d.category === selectedCategory && d.subcategory === selectedSubcategory).map(d => ({ name: d.source, value: parseFloat(d.total), count: d.count }));
     return [];
   }
 
   getMonthlyData() {
     const { analyticsData, selectedCategory, drillLevel } = this.state;
     if (!analyticsData) return [];
-    const monthlyData = MONTH_NAMES.map((name, i) => ({ name, value: 0 }));
+    const monthlyData = MONTH_NAMES.map((name) => ({ name, value: 0 }));
     if (drillLevel >= 1 && selectedCategory) {
-      analyticsData.monthly_by_category
-        .filter(d => d.category === selectedCategory)
-        .forEach(d => {
-          const idx = parseInt(d.month) - 1;
-          if (monthlyData[idx]) monthlyData[idx].value = parseFloat(d.total);
-        });
+      analyticsData.monthly_by_category.filter(d => d.category === selectedCategory).forEach(d => {
+        const idx = parseInt(d.month) - 1;
+        if (monthlyData[idx]) monthlyData[idx].value = parseFloat(d.total);
+      });
     } else {
       const map = {};
       analyticsData.monthly_by_category.forEach(d => {
@@ -114,6 +111,13 @@ class Analytics extends Component {
       Object.entries(map).forEach(([i, v]) => { if (monthlyData[i]) monthlyData[i].value = v; });
     }
     return monthlyData;
+  }
+
+  getDrillTitle() {
+    const { drillLevel, selectedCategory, selectedSubcategory } = this.state;
+    if (drillLevel === 0) return 'By Category';
+    if (drillLevel === 1) return `${selectedCategory} — Subcategories`;
+    return `${selectedSubcategory} — Sources`;
   }
 
   renderBreadcrumb() {
@@ -141,24 +145,18 @@ class Analytics extends Component {
     );
   }
 
-  getDrillTitle() {
-    const { drillLevel, selectedCategory, selectedSubcategory } = this.state;
-    if (drillLevel === 0) return 'By Category';
-    if (drillLevel === 1) return `${selectedCategory} — By Subcategory`;
-    return `${selectedSubcategory} — By Source`;
-  }
-
   render() {
     const { loading, error, txType, year, drillLevel } = this.state;
     const pieData = this.getCurrentPieData();
     const monthlyData = this.getMonthlyData();
     const totalInView = pieData.reduce((s, d) => s + d.value, 0);
+    const canDrill = drillLevel < 2;
 
     return (
       <div className="page-container fade-in">
         <div className="page-header">
           <h1 className="page-title">Analytics</h1>
-          <p className="page-subtitle">Click on chart segments to drill down into your spending</p>
+          <p className="page-subtitle">Click chart segments to drill down into your spending</p>
         </div>
 
         <div className="analytics-controls">
@@ -176,12 +174,12 @@ class Analytics extends Component {
             value={year}
             onChange={e => this.setState({ year: e.target.value }, this.loadAnalytics)}
           >
-            {[2025, 2024, 2023, 2022].map(y => <option key={y} value={y}>{y}</option>)}
+            {[2026, 2025, 2024, 2023, 2022].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
 
           {drillLevel > 0 && (
             <button className="btn btn-outline btn-sm" onClick={() => this.setState({ drillLevel: 0, selectedCategory: null, selectedSubcategory: null })}>
-              <span className="material-icons-round" style={{ fontSize: 16 }}>refresh</span>
+              <span className="material-icons-round" style={{ fontSize: 15 }}>refresh</span>
               Reset
             </button>
           )}
@@ -198,30 +196,29 @@ class Analytics extends Component {
         ) : (
           <>
             <div className="analytics-grid">
-              {/* Pie Chart */}
+              {/* Pie chart */}
               <div className="chart-card">
                 <div className="chart-title">{this.getDrillTitle()}</div>
-                <div className="chart-subtitle" style={{ color: 'var(--gray-500)', fontSize: 12, marginBottom: 4 }}>
-                  {drillLevel < 2 ? 'Click a segment to drill down' : 'Source level view'}
-                </div>
+                <p className="chart-subtitle">{canDrill ? 'Tap a segment to drill down' : 'Source level'}</p>
+
                 {loading ? (
-                  <div className="skeleton" style={{ height: 280 }} />
+                  <div className="skeleton" style={{ height: 240, borderRadius: 8 }} />
                 ) : pieData.length === 0 ? (
-                  <div className="empty-state" style={{ padding: 40 }}>
+                  <div className="empty-state" style={{ padding: '32px 16px' }}>
                     <span className="material-icons-round">pie_chart</span>
                     <h3>No data</h3>
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={280}>
+                  <ResponsiveContainer width="100%" height={240}>
                     <PieChart>
                       <Pie
                         data={pieData}
                         cx="50%" cy="50%"
-                        innerRadius={65} outerRadius={110}
+                        innerRadius={55} outerRadius={95}
                         paddingAngle={2}
                         dataKey="value"
                         onClick={drillLevel === 0 ? this.handleCategoryClick : drillLevel === 1 ? this.handleSubcategoryClick : undefined}
-                        style={{ cursor: drillLevel < 2 ? 'pointer' : 'default' }}
+                        style={{ cursor: canDrill ? 'pointer' : 'default' }}
                       >
                         {pieData.map((_, i) => (
                           <Cell key={i} fill={MATERIAL_COLORS[i % MATERIAL_COLORS.length]} stroke="none" />
@@ -231,47 +228,47 @@ class Analytics extends Component {
                     </PieChart>
                   </ResponsiveContainer>
                 )}
+
                 {/* Legend */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: 8 }}>
+                <div className="analytics-legend">
                   {pieData.map((d, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--gray-600)', cursor: drillLevel < 2 ? 'pointer' : 'default' }}
-                      onClick={() => drillLevel === 0 ? this.handleCategoryClick({ name: d.name }) : drillLevel === 1 ? this.handleSubcategoryClick({ name: d.name }) : null}
+                    <div
+                      key={i}
+                      className={`analytics-legend-item ${canDrill ? 'clickable' : ''}`}
+                      onClick={() => canDrill && (drillLevel === 0 ? this.handleCategoryClick({ name: d.name }) : this.handleSubcategoryClick({ name: d.name }))}
                     >
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: MATERIAL_COLORS[i % MATERIAL_COLORS.length] }} />
-                      <span>{d.name}</span>
-                      <span style={{ color: 'var(--gray-400)' }}>({((d.value / totalInView) * 100).toFixed(0)}%)</span>
+                      <div className="legend-dot" style={{ background: MATERIAL_COLORS[i % MATERIAL_COLORS.length] }} />
+                      <span className="legend-name">{d.name}</span>
+                      <span className="legend-pct">({((d.value / (totalInView || 1)) * 100).toFixed(0)}%)</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Summary list */}
+              {/* Breakdown list */}
               <div className="chart-card">
                 <div className="chart-title">Breakdown</div>
-                <div className="chart-subtitle" style={{ marginBottom: 16 }}>
-                  Total: <strong style={{ color: 'var(--gray-900)' }}>{formatCurrency(totalInView)}</strong>
+                <div className="analytics-total">
+                  Total: <strong>{formatCurrency(totalInView)}</strong>
                 </div>
+
                 {loading ? (
-                  [1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height: 48, marginBottom: 8 }} />)
+                  <div className="analytics-list">
+                    {[1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height: 44, borderRadius: 8 }} />)}
+                  </div>
                 ) : (
-                  <div style={{ maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div className="analytics-list">
                     {pieData.sort((a, b) => b.value - a.value).map((d, i) => (
                       <div
                         key={i}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
-                          borderRadius: 8, background: 'var(--gray-50)', cursor: drillLevel < 2 ? 'pointer' : 'default',
-                          transition: 'background 0.15s',
-                        }}
-                        onClick={() => drillLevel === 0 ? this.handleCategoryClick({ name: d.name }) : drillLevel === 1 ? this.handleSubcategoryClick({ name: d.name }) : null}
-                        onMouseEnter={e => e.currentTarget.style.background = 'var(--blue-50)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'var(--gray-50)'}
+                        className={`analytics-list-item ${canDrill ? 'clickable' : ''}`}
+                        onClick={() => canDrill && (drillLevel === 0 ? this.handleCategoryClick({ name: d.name }) : this.handleSubcategoryClick({ name: d.name }))}
                       >
-                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: MATERIAL_COLORS[i % MATERIAL_COLORS.length], flexShrink: 0 }} />
-                        <span style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>{d.name}</span>
-                        <span style={{ fontSize: 13, color: 'var(--gray-500)' }}>{d.count} txns</span>
-                        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, fontWeight: 600, color: 'var(--gray-900)' }}>{formatCurrency(d.value)}</span>
-                        {drillLevel < 2 && <span className="material-icons-round" style={{ fontSize: 16, color: 'var(--gray-400)' }}>chevron_right</span>}
+                        <div className="ali-dot" style={{ background: MATERIAL_COLORS[i % MATERIAL_COLORS.length] }} />
+                        <span className="ali-name">{d.name}</span>
+                        <span className="ali-count">{d.count} txns</span>
+                        <span className="ali-amount">{formatCurrency(d.value)}</span>
+                        {canDrill && <span className="material-icons-round ali-chevron">chevron_right</span>}
                       </div>
                     ))}
                   </div>
@@ -279,22 +276,22 @@ class Analytics extends Component {
               </div>
             </div>
 
-            {/* Monthly bar chart */}
+            {/* Monthly bar */}
             <div className="chart-card">
               <div className="chart-title">Monthly Trend</div>
-              <div className="chart-subtitle" style={{ marginBottom: 20 }}>
-                {drillLevel >= 1 ? `${this.state.selectedCategory} spending by month` : `Total ${txType} by month`}
-              </div>
+              <p className="chart-subtitle">
+                {drillLevel >= 1 ? `${this.state.selectedCategory} by month` : `Total ${txType} by month`}
+              </p>
               {loading ? (
-                <div className="skeleton" style={{ height: 220 }} />
+                <div className="skeleton" style={{ height: 200, borderRadius: 8 }} />
               ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={monthlyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F5F5F5" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9E9E9E' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: '#9E9E9E' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
-                    <Tooltip formatter={(v) => [formatCurrency(v), txType === 'expense' ? 'Expenses' : 'Income']} />
-                    <Bar dataKey="value" fill={txType === 'expense' ? '#F44336' : '#4CAF50'} radius={[4, 4, 0, 0]} name={txType === 'expense' ? 'Expenses' : 'Income'} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9E9E9E' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: '#9E9E9E' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} width={48} />
+                    <Tooltip content={<BarTooltip />} />
+                    <Bar dataKey="value" fill={txType === 'expense' ? '#F44336' : '#4CAF50'} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
